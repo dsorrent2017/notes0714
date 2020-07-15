@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Star Wars - Express</title>
+    <!-- Latest compiled and minified CSS & JS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="jumbotron">
+        <h1>Note Manager</h1>
+        <h3>A convenient appliation for building a TODO List!</h3>
+        <hr />
+        <a href="/"
+          ><button class="btn btn-danger btn-lg">
+            <span class="fa fa-eye"></span>View Notes
+          </button></a
+        >
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3><strong>Add Notes</strong></h3>
+            </div>
+            <div class="card-body">
+              <form method="POST" role="form">
+                <div class="form-group">
+                  <label for="name">Name</label>
+                  <input type="text" class="form-control" id="name" />
+                </div>
+
+                <div class="form-group">
+                  <label for="role">Note Contents</label>
+                  <textarea class="form-control" id="role"></textarea>
+                </div>
+              </form>
+              <br />
+              <div class="text-right">
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-md"
+                  id="add-btn"
+                >
+                  <span class="fa fa-fire"></span> Add a Note
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      // Question: What does this code do?
+      $("#add-btn").on("click", function (event) {
+        debugger;
+        let findStr = "/api/characters/" + $("#name").val().trim();
+        console.log("Url to find name = " + findStr);
+
+            var newCharacter = {
+              name: $("#name").val().trim(),
+              role: $("#role").val().trim()
+            };
+
+            $.post("/api/characters", newCharacter).then(function (data) {
+              debugger;
+              if(data === true){
+                debugger;
+                console.log("add.html", data);
+                alert('Added Note with Name '  + $("#name") );
+              }else{
+                debugger;
+                alert('duplicate note name found try a different name for your new note' );
+              }
+
+            });
+          }
+    );
+      
+    </script>
+  </body>
+</html>
