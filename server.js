@@ -4,6 +4,7 @@ var express = require("express");
 var path = require("path");
 var fs = require("fs");
 const util = require("util");
+const { json } = require("express");
 
 const writeFileAsync = util.promisify(fs.writeFile)
 const appendFileAsync = util.promisify(fs.appendFile)
@@ -19,9 +20,9 @@ var PORT = 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Star Wars Characters (DATA)
+// Characters (DATA)
 // =============================================================
-var characters = new Array();
+let notes = null;
 
 // Routes
 // =============================================================
@@ -42,19 +43,19 @@ app.get("/delete", function(req, res) {
   res.sendFile(path.join(__dirname, "delete.html"));
 });
 
-// Displays all characters
-app.get("/api/characters", function(req, res) {
-  console.log('app.get("/api/characters" ')
-  return res.json(characters);
+// Displays all notes
+app.get("/api/notes", function(req, res) {
+  console.log('app.get("/api/notes" ')
+  return res.json(notes);
 });
 
-// Finds a single character by name, returning true, or returns false
-app.get("/api/characters/:character", function(req, res) {
-  console.log('app.get("/api/characters/:character"')
-  var chosen = req.params.character;
+// Finds a single note by name, returning true, or returns false
+app.get("/api/notes/:note", function(req, res) {
+  console.log('app.get("/api/notes/:note"')
+  var chosen = req.params.note;
 
-  for (var i = 0; i < characters.length; i++) {
-    if (chosen === characters[i].name) {
+  for (var i = 0; i < notes.length; i++) {
+    if (chosen === notes[i].name) {
       console.log("found "+ chosen + "returning true")
       return res.json(true);
     }
@@ -63,42 +64,50 @@ app.get("/api/characters/:character", function(req, res) {
   return res.json(false);
 });
 
-function deleteByName(toDelete){
-  if(characters == null){
-    return;
-  }
-  for (var i = 0; i < characters.length; i++) {
-    let elem = characters[i]
+function deleteByName(toMatch){
+  console.log('!!!!! deleteByName !!!!!')
+  let notesIndex = -1;
+  let elemName = null;
+  if(notes != null){
 
-    let elemName = elem[0].name
+    console.log("SEARCH FOR RECORD TO DELETE  notes.length " + notes.length)
 
-    console.log(JSON.stringify(elem) + " name - " + elemName)
 
-    if( elem == null){
-      console.log("Characters not initialized!!!")
-      return;
+    for (var i = 0; i < notes.length; i++) {
+      let elem = notes[i]
 
-    }else if(elemName == null){
-      console.log("Not getting a name "+ JSON.stringify(characters[i]))
-      return;
+      console.log("@@@@@@ Comparing : " + JSON.stringify(elem))
+
+      //if(elem == null || elem[0] == null) break;
+
+      elemName = elem.name
+      
+      console.log(JSON.stringify(" stored name - " + elemName + " with " + toMatch))
+      
+      if (toMatch == elemName) {
+        notesIndex = i;
+        
+      }
+
     }
-    
-    console.log("comparing #"+ toDelete +"# with #"+elemName + "#")
-    if (toDelete == elemName) {
-      console.log("found "+ toDelete + " returning true")
-      characters.splice(i,1);
-      return true;
-    }
   }
+  if(notesIndex != -1){
+    console.log("DELETING " + elemName)
+    notes.splice(notesIndex,1)
+    updateNotes();
+    return true
+
+  }
+
   console.log("NOT found "+ toDelete + "returning false")
-  return false;
+  return false
 }
-// Finds a single character by name, returning true, or returns false
-app.post("/api/delete/:character", function(req, res) {
-  var toDelete = req.params.character.trim();
-  console.log('app.get("/api/characters/:character " ' + req.params.character )
+// Finds a single note by name, returning true, or returns false
+app.post("/api/delete/:note", function(req, res) {
+  var toDelete = req.params.note.trim();
+  console.log('app.get("/api/notes/:note " ' + req.params.note )
  
-  return res.json(deleteByName(req.params.character))
+  return res.json(deleteByName(req.params.note))
   
 });
 
@@ -118,20 +127,27 @@ function deleteDbjson(){
 
 function updateNotes(){
 
-    console.log("deleting db.json and writing to db.json " + JSON.stringify(characters));
+    console.log("deleting db.json and writing to db.json " + JSON.stringify(notes));
 
   ///////////////////////////////////////////////////////////////////
   let outputList = new Array();  
-  for (let i = 0; i < characters.length; i++) {
-    let jsonObject = characters[i];
+  let outputString = "";
+  for (let i = 0; i < notes.length; i++) {
+    let jsonObject = notes[i];
 
-    
-    console.log("!!!!!jsonObject = " + JSON.stringify(jsonObject));
-    outputList.push(jsonObject); 
+    console.log("\n!!!!!jsonObject at i = " + i + " " + jsonObject) //JSON.stringify(jsonObject));
+
+    outputString += JSON.stringify(jsonObject);
+    if(i + 1 != notes.length){
+      outputString += ","
+    }
   }
+  //outputString += ""
+  //writeFileAsync( "db.json" , outputString )
 // Here we are putting json object into newuserList which is of JSONArray type
 try{
-    writeFileAsync( "db.json" ,  JSON.stringify(outputList));
+    console.log("$$$$$$ " + outputString)
+    writeFileAsync( "db.json" , "[" + outputString + "]");
     console.log("Successfully wrote to db.json");
 }
 catch( e  ){
@@ -150,27 +166,31 @@ catch( e  ){
 
 
 // Create New Characters - takes in JSON input
-app.post("/api/characters", function(req, res) {
-  console.log('!!!!!!!!!app.post("/api/characters"' + JSON.stringify(req.body))
+app.post("/api/notes", function(req, res) {
+  console.log('!!!!!!!!!app.post("/api/notes"' + JSON.stringify(req.body))
   
   let toMatch = req.body.name;
  // console.log("returning --- take out")
  // return;
 
-  //if(characters != null &&  characters[0] != null){
+  //if(notes != null &&  notes[0] != null){
 
-    console.log("CHECKING FOR DUPLICATES")
-   
-    for (var i = 0; i < characters.length; i++) {
-      let elem = characters[i]
+    
+    
+  if(notes != null){
 
-      if(elem == null || elem[0] == null) break;
+    console.log("CHECKING FOR DUPLICATES  notes.length " + notes.length)
 
-      let elemName = elem[0].name
+
+    for (var i = 0; i < notes.length; i++) {
+      let elem = notes[i]
+
+      console.log("@@@@@@ Comparing : " + JSON.stringify(elem))
+
+      //if(elem == null || elem[0] == null) break;
+
+      let elemName = elem.name
       
-
-      console.log("Comparing : ")
-
       console.log(JSON.stringify(" stored name - " + elemName + " with " + toMatch))
       
       if (toMatch == elemName) {
@@ -179,9 +199,9 @@ app.post("/api/characters", function(req, res) {
       }
 
     }
-  //}else{
-    
-  //}
+  }
+  console.log("NO DUPLICATE, PROCEED")
+
   // req.body hosts is equal to the JSON post sent from the user
   // This works because of our body parsing middleware
   var newCharacter = req.body;
@@ -192,7 +212,16 @@ app.post("/api/characters", function(req, res) {
 
   console.log(newCharacter);
 
-  characters.push(newCharacter);
+  if(notes == null || notes.length == 0){
+    console.log("ASSIGNING NOTES")
+    notes = [newCharacter]
+  }else{
+    console.log("typeof notes " + typeof notes)
+    notes.push(newCharacter);
+  }
+  
+
+  console.log("notes after push $$$$$ " + JSON.stringify(notes))
 
   updateNotes();
 
@@ -207,8 +236,16 @@ app.post("/api/characters", function(req, res) {
   try {
     
     var contents = await readFileAsync("db.json", "utf8")
-    characters.push(JSON.parse(contents))
-    console.log("Init characters read: ", contents)
+    
+    console.log("init contents = " + contents)
+    if(contents == null){
+      console.log("no file contents $$$$$$$$$$$$$$$$ ")
+    }
+    notes = JSON.parse(contents);
+
+    console.log("Init notes: ", notes.length > 0 ? JSON.stringify(notes) : "empty")
+
+    console.log("Type of notes = " + typeof notes)
 
     //for debug: deleteByName("1")
 

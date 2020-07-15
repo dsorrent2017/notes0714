@@ -25,7 +25,7 @@
           Note</button></a>
       <a href="/delete"><button class="btn btn-danger btn-lg"><span class="fa fa-plus"></span>Delete Existing
             Note</button></a>
-      <a href="/api/characters"><button class="btn btn-danger btn-lg"><span
+      <a href="/api/notes"><button class="btn btn-danger btn-lg"><span
             class="fa fa-eye"></span> All Notes</button></a>
     </div>
     <div class="row">
@@ -59,7 +59,7 @@
       // You can read more about RegEx Patterns later https://www.regexbuddy.com/regex.html
       searchedCharacter = searchedCharacter.replace(/\s+/g, "").toLowerCase();
 
-      $.get("/api/characters/" + searchedCharacter, function(data) {
+      $.get("/api/notes/" + searchedCharacter, function(data) {
         console.log(data);
         if (data) {
 

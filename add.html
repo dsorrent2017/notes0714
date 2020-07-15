@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Star Wars - Express</title>
+    <title>Notes</title>
     <!-- Latest compiled and minified CSS & JS -->
     <link
       rel="stylesheet"
@@ -65,7 +65,7 @@
       // Question: What does this code do?
       $("#add-btn").on("click", function (event) {
         debugger;
-        let findStr = "/api/characters/" + $("#name").val().trim();
+        let findStr = "/api/notes/" + $("#name").val().trim();
         console.log("Url to find name = " + findStr);
 
             var newCharacter = {
@@ -73,15 +73,15 @@
               role: $("#role").val().trim()
             };
 
-            $.post("/api/characters", newCharacter).then(function (data) {
+            $.post("/api/notes", newCharacter).then(function (data) {
               debugger;
               if(data === true){
                 debugger;
                 console.log("add.html", data);
-                alert('Added Note with Name '  + $("#name") );
+                alert('Added Note with Name '  + $("#name").val );
               }else{
                 debugger;
-                alert('duplicate note name found try a different name for your new note' );
+                alert('DUPLICATE note name found.\n'  + 'Try a different name for your new note' );
               }
 
             });
